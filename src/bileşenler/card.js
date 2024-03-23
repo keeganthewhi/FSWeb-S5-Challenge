@@ -1,33 +1,60 @@
+
+
+const fetch = require("node-fetch");
+
 const Card = (makale) => {
-  // GÖREV 5
-  // ---------------------
-  // Aşağıda gördüğünüz işaretlemeyi döndürmesi gereken bu fonksiyonu uygulayın.
-  // Tek argümanı olarak "anabaslik", "yazarFoto" ve "yazarAdı" özelliklerine sahip bir "makale" nesnesi alır.
-  // Kullanılan etiketler, öğelerin hiyerarşisi ve öznitelikleri sağlanan işaretlemeyle tam olarak eşleşmelidir!
-  // Öğelerin içindeki metin, "textContent" özelliği kullanılarak ayarlanacaktır ("innerText" DEĞİL).
-  // Bir kullanıcı bir kartı tıkladığında makalenin başlığının konsola kaydedilmesi için click event dinleyicisi ekleyin.
-  //
-  // <div class="card">
-  //   <div class="headline">{ anabaslik }</div>
-  //   <div class="author">
-  //     <div class="img-container">
-  //       <img src={ yazarFoto }>
-  //     </div>
-  //     <span>{ yazarAdı } tarafından</span>
-  //   </div>
-  // </div>
-  //
-}
+  const cardSide = document.createElement("div");
+  cardSide.classList.add("card");
 
-const cardEkleyici = (secici) => {
-  // GÖREV 6
-  // ---------------------
-  // Tek bağımsız değişkeni olarak bir css seçici alan bu fonksiyonu uygulayın.
-  // Makaleleri bu uç noktadan almalıdır: `http://localhost:5001/api/makaleler` (console.log ile test edin!!).
-  // Bununla birlikte, makaleler tek bir düzenli dizi halinde organize edilmemiştir. Yanıtı yakından inceleyin!
-  // Card bileşenini kullanarak yanıttaki her makale nesnesinden bir kart oluşturun.
-  // Her cardı, fonksiyona iletilen seçiciyle eşleşen DOM'daki öğeye ekleyin.
-  //
-}
+  const headlineSide = document.createElement("div");
+  headlineSide.classList.add("headline");
+  headlineSide.textContent = makale.anabaslik;
 
-export { Card, cardEkleyici }
+  cardSide.appendChild(headlineSide);
+
+  const authorSide = document.createElement("div");
+  authorSide.classList.add("author");
+
+  const imgSide = document.createElement("div");
+  imgSide.classList.add("img-container");
+
+  const imgEl = document.createElement("img");
+  imgEl.setAttribute("src", makale.yazarFoto);
+  imgSide.appendChild(imgEl);
+
+  authorSide.appendChild(imgSide);
+
+  const spanElement = document.createElement("span");
+  spanElement.textContent = makale.yazarAdi + " tarafından";
+  authorSide.appendChild(spanElement);
+
+  cardSide.appendChild(authorSide);
+
+  return cardSide;
+};
+
+const cardEkleyici = async (secici) => {
+  const cardsContainer = document.querySelector(secici);
+
+  try {
+    const res = await fetch("http://localhost:5001/api/makaleler");
+    if (!res.ok) {
+      throw new Error("HTTP error, status = " + res.status);
+    }
+    const data = await res.json();
+
+    const { makaleler } = data;
+
+    for (const key in makaleler) {
+      const array = makaleler[key];
+      array.forEach((el) => {
+        const card = Card(el);
+        cardsContainer.appendChild(card);
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+};
+
+export { Card, cardEkleyici };  
